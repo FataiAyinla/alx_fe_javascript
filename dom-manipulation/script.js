@@ -124,6 +124,17 @@ document.addEventListener('DOMContentLoaded', () => {
     showRandomQuote();
   }
 });
+document.addEventListener("DOMContentLoaded", () => {
+  createAddQuoteForm();
+  populateCategories();
+  document.getElementById("newQuote").addEventListener("click", filterQuotes);
+  document.getElementById("exportBtn").addEventListener("click", exportToJsonFile);
+  document.getElementById("importFile").addEventListener("change", importFromJsonFile);
+
+  syncWithServer(); // Initial sync
+  setInterval(syncWithServer, 30000); // Periodic sync every 30 seconds
+});
+
 // ✅ Populate category filter dropdown from unique categories
 function populateCategories() {
   const categorySet = new Set();
@@ -199,7 +210,24 @@ let serverQuotes = [
 function fetchFromServer() {
   return new Promise(resolve => {
     function syncWithServer() {
-  fetchQuotesFromServer().then(serverData => {
+// ✅ New version: fetch quotes from JSONPlaceholder
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+    const data = await response.json();
+
+    // ✅ Convert JSONPlaceholder posts into quote objects
+    return data.slice(0, 10).map(post => ({
+      text: post.body,
+      category: "Server"
+    }));
+  } catch (error) {
+    console.error("Failed to fetch from server:", error);
+    return []; // fallback if fetch fails
+  }
+}
+
+      fetchQuotesFromServer().then(serverData => {
     const localData = JSON.parse(localStorage.getItem("quotes")) || [];
 
     const serverTexts = new Set(serverData.map(q => q.text));
@@ -217,6 +245,25 @@ function fetchFromServer() {
     filterQuotes();
     notifyUser("Quotes synced with server. Conflicts resolved.");
   });
+}
+async function syncWithServer() {
+  const serverData = await fetchQuotesFromServer();
+  const localData = JSON.parse(localStorage.getItem("quotes")) || [];
+
+  const serverTexts = new Set(serverData.map(q => q.text));
+  const merged = [...serverData];
+
+  localData.forEach(localQuote => {
+    if (!serverTexts.has(localQuote.text)) {
+      merged.push(localQuote);
+    }
+  });
+
+  quotes = merged;
+  saveQuotes();
+  populateCategories();
+  filterQuotes();
+  notifyUser("Quotes synced with server and conflicts resolved.");
 }
 
 
