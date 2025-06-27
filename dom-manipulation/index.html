@@ -16,3 +16,22 @@
   <button id="newQuote">Show New Quote</button>
   <button id="exportBtn">Export Quotes to JSON</button>
   <input type="file" id="importFile" accept=".json" />
+  <body>
+  <h1>Dynamic Quote Generator</h1>
+
+  <!-- 🔽 Category filter dropdown -->
+  <label for="categoryFilter">Filter by Category:</label>
+  <select id="categoryFilter" onchange="filterQuotes()">
+    <option value="all">All Categories</option>
+    <!-- JS will add more -->
+  </select>
+
+  <div id="quoteDisplay"></div>
+
+  <button id="newQuote">Show New Quote</button>
+  <button id="exportBtn">Export Quotes to JSON</button>
+  <input type="file" id="importFile" accept=".json" />
+
+  <script src="script.js"></script>
+</body>
+

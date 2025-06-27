@@ -109,3 +109,69 @@ document.addEventListener('DOMContentLoaded', () => {
     showRandomQuote();
   }
 });
+// ✅ Populate category filter dropdown from unique categories
+function populateCategories() {
+  const categorySet = new Set();
+  quotes.forEach(q => categorySet.add(q.category));
+  const categoryFilter = document.getElementById('categoryFilter');
+
+  // Remove old options (except 'All')
+  categoryFilter.innerHTML = `<option value="all">All Categories</option>`;
+
+  categorySet.forEach(category => {
+    const option = document.createElement('option');
+    option.value = category;
+    option.textContent = category;
+    categoryFilter.appendChild(option);
+  });
+
+  // Restore last selected filter from localStorage
+  const lastCategory = localStorage.getItem("selectedCategory");
+  if (lastCategory) {
+    categoryFilter.value = lastCategory;
+    filterQuotes();
+  }
+}
+
+// ✅ Filter quotes by category
+function filterQuotes() {
+  const selectedCategory = document.getElementById('categoryFilter').value;
+  localStorage.setItem("selectedCategory", selectedCategory);
+
+  const filtered = selectedCategory === 'all'
+    ? quotes
+    : quotes.filter(q => q.category === selectedCategory);
+
+  if (filtered.length > 0) {
+    const randomQuote = filtered[Math.floor(Math.random() * filtered.length)];
+    document.getElementById('quoteDisplay').innerHTML =
+      `<p>"${randomQuote.text}"</p><em>- ${randomQuote.category}</em>`;
+    sessionStorage.setItem("lastQuote", JSON.stringify(randomQuote));
+  } else {
+    document.getElementById('quoteDisplay').textContent = "No quotes found in this category.";
+  }
+}
+function populateCategories() {
+  const categoryFilter = document.getElementById("categoryFilter");
+
+  // ✅ Extract unique categories using .map and Set
+  const categories = [...new Set(quotes.map(quote => quote.category))];
+
+  // Clear existing options and keep "All Categories"
+  categoryFilter.innerHTML = `<option value="all">All Categories</option>`;
+
+  categories.forEach(category => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    categoryFilter.appendChild(option);
+  });
+
+  // Restore last selected filter from localStorage if it exists
+  const savedCategory = localStorage.getItem("selectedCategory");
+  if (savedCategory) {
+    categoryFilter.value = savedCategory;
+    filterQuotes();
+  }
+}
+
