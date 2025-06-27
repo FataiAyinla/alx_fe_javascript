@@ -174,4 +174,60 @@ function populateCategories() {
     filterQuotes();
   }
 }
+// Mock server data (simulates JSONPlaceholder-like response)
+let serverQuotes = [
+  { text: "Server quote 1", category: "Wisdom" },
+  { text: "Server quote 2", category: "Humor" }
+];
+
+// Simulate fetching from "server"
+function fetchFromServer() {
+  return new Promise(resolve => {
+    setTimeout(() => resolve(serverQuotes), 1000);
+  });
+}
+
+// Simulate pushing local changes to "server"
+function pushToServer(newQuotes) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const existingTexts = new Set(serverQuotes.map(q => q.text));
+      newQuotes.forEach(q => {
+        if (!existingTexts.has(q.text)) {
+          serverQuotes.push(q);
+        }
+      });
+      resolve(serverQuotes);
+    }, 1000);
+  });
+}
+function syncWithServer() {
+  fetchFromServer().then(serverData => {
+    const localData = JSON.parse(localStorage.getItem("quotes")) || [];
+
+    // Conflict resolution: server data takes precedence
+    const serverTexts = new Set(serverData.map(q => q.text));
+    const merged = [...serverData];
+
+    localData.forEach(localQuote => {
+      if (!serverTexts.has(localQuote.text)) {
+        merged.push(localQuote); // add unique local quote
+      }
+    });
+
+    quotes = merged;
+    saveQuotes();
+    populateCategories();
+    filterQuotes();
+    notifyUser("Synced with server. Conflicts resolved.");
+  });
+}
+
+// Periodically sync every 30 seconds
+setInterval(syncWithServer, 30000);
+function notifyUser(message) {
+  const notice = document.getElementById("notification");
+  notice.textContent = message;
+  setTimeout(() => (notice.textContent = ""), 5000);
+}
 
