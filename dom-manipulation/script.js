@@ -296,11 +296,16 @@ function syncWithServer() {
     });
 
     quotes = merged;
-    saveQuotes();
+    saveQuotes(); syncQuotesToServer();
     populateCategories();
     filterQuotes();
     notifyUser("Synced with server. Conflicts resolved.");
   });
+}
+function notifyUser(message) {
+  const box = document.getElementById("notification");
+  box.textContent = message;
+  setTimeout(() => (box.textContent = ""), 5000);
 }
 
 // Periodically sync every 30 seconds
@@ -311,3 +316,27 @@ function notifyUser(message) {
   setTimeout(() => (notice.textContent = ""), 5000);
 }
 
+async function syncQuotesToServer() {
+  const localQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
+
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST", // ✅ required
+      headers: {
+        "Content-Type": "application/json" // ✅ required
+      },
+      body: JSON.stringify(localQuotes) // ✅ sending data
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to post quotes to server");
+    }
+
+    const result = await response.json();
+    console.log("✅ Quotes synced to server:", result);
+    notifyUser("Quotes successfully synced to server!");
+  } catch (error) {
+    console.error("❌ Error syncing quotes:", error);
+    notifyUser("⚠️ Failed to sync quotes to server.");
+  }
+}
