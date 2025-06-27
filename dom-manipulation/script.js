@@ -1,3 +1,18 @@
+
+// Simulated server quote storage
+let serverQuotes = [
+  { text: "Server quote 1", category: "Wisdom" },
+  { text: "Server quote 2", category: "Humor" }
+];
+
+// ✅ Required: fetchQuotesFromServer
+function fetchQuotesFromServer() {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(serverQuotes);
+    }, 1000); // simulate 1 second delay
+  });
+}
 // ✅ Step 1: Load quotes from localStorage or use defaults
 let quotes = JSON.parse(localStorage.getItem("quotes")) || [
   { text: "Believe in yourself and all that you are.", category: "Inspiration" },
@@ -183,9 +198,27 @@ let serverQuotes = [
 // Simulate fetching from "server"
 function fetchFromServer() {
   return new Promise(resolve => {
-    setTimeout(() => resolve(serverQuotes), 1000);
+    function syncWithServer() {
+  fetchQuotesFromServer().then(serverData => {
+    const localData = JSON.parse(localStorage.getItem("quotes")) || [];
+
+    const serverTexts = new Set(serverData.map(q => q.text));
+    const merged = [...serverData];
+
+    localData.forEach(localQuote => {
+      if (!serverTexts.has(localQuote.text)) {
+        merged.push(localQuote);
+      }
+    });
+
+    quotes = merged;
+    saveQuotes();
+    populateCategories();
+    filterQuotes();
+    notifyUser("Quotes synced with server. Conflicts resolved.");
   });
 }
+
 
 // Simulate pushing local changes to "server"
 function pushToServer(newQuotes) {
