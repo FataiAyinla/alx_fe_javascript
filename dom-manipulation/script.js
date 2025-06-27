@@ -335,6 +335,8 @@ async function syncQuotesToServer() {
     const result = await response.json();
     console.log("✅ Quotes synced to server:", result);
     notifyUser("Quotes successfully synced to server!");
+    notifyUser("Quotes synced with server!");
+
   } catch (error) {
     console.error("❌ Error syncing quotes:", error);
     notifyUser("⚠️ Failed to sync quotes to server.");
